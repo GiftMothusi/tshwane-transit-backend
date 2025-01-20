@@ -2,25 +2,28 @@
 
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Log;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-*/
-
-// Public routes
-Route::post('/auth/register', [AuthController::class, 'register']);
-Route::post('/auth/login', [AuthController::class, 'login']);
-
-// Protected routes
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/auth/logout', [AuthController::class, 'logout']);
-    Route::get('/user', [AuthController::class, 'user']);
-    Route::patch('/user/profile', [AuthController::class, 'updateProfile']);
+// Test route
+Route::get('/test', function() {
+    Log::info('Test route hit');
+    return response()->json(['message' => 'API is working']);
 });
 
-// Health check
-Route::get('/health', function () {
-    return response()->json(['status' => 'healthy']);
+Route::prefix('auth')->group(function () {
+    // Public routes
+    Route::post('/register', [AuthController::class, 'register'])
+         ->name('auth.register');
+    Route::post('/login', [AuthController::class, 'login'])
+         ->name('auth.login');
+
+    // Protected routes
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/logout', [AuthController::class, 'logout'])
+             ->name('auth.logout');
+        Route::get('/user', [AuthController::class, 'user'])
+             ->name('auth.user');
+        Route::patch('/profile', [AuthController::class, 'updateProfile'])
+             ->name('auth.profile.update');
+    });
 });
