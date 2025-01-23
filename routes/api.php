@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BusRouteController;
+use App\Http\Controllers\BusScheduleController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Log;
 
@@ -25,5 +27,54 @@ Route::prefix('auth')->group(function () {
              ->name('auth.user');
         Route::patch('/profile', [AuthController::class, 'updateProfile'])
              ->name('auth.profile.update');
+    });
+});
+
+// Bus System Routes
+Route::prefix('v1')->group(function () {
+    // Public transit information routes
+    Route::get('/bus-schedules', [BusScheduleController::class, 'index'])
+         ->name('schedules.index');
+    Route::get('/bus-locations', [BusScheduleController::class, 'getLiveLocations'])
+         ->name('schedules.locations');
+
+    Route::get('/routes/search', [BusRouteController::class, 'search'])
+         ->name('routes.search');
+    Route::get('/schedules/search', [BusScheduleController::class, 'search'])
+         ->name('schedules.search');
+
+    // Protected transit management routes
+    Route::middleware('auth:sanctum')->group(function () {
+        // Bus Routes CRUD
+        Route::prefix('routes')->group(function () {
+            Route::get('/', [BusRouteController::class, 'index'])
+                 ->name('routes.index');
+            Route::post('/', [BusRouteController::class, 'store'])
+                 ->name('routes.store');
+            Route::get('/{id}', [BusRouteController::class, 'show'])
+                 ->name('routes.show');
+            Route::put('/{id}', [BusRouteController::class, 'update'])
+                 ->name('routes.update');
+            Route::delete('/{id}', [BusRouteController::class, 'destroy'])
+                 ->name('routes.delete');
+
+            // Route-specific schedules
+            Route::get('/{id}/schedules', [BusRouteController::class, 'getRouteSchedules'])
+                 ->name('routes.schedules');
+            Route::post('/{id}/schedules', [BusRouteController::class, 'addRouteSchedule'])
+                 ->name('routes.schedules.add');
+        });
+
+        // Schedule Management
+        Route::prefix('schedules')->group(function () {
+            Route::get('/{id}', [BusScheduleController::class, 'show'])
+                 ->name('schedules.show');
+            Route::post('/', [BusScheduleController::class, 'store'])
+                 ->name('schedules.store');
+            Route::put('/{id}', [BusScheduleController::class, 'update'])
+                 ->name('schedules.update');
+            Route::delete('/{id}', [BusScheduleController::class, 'destroy'])
+                 ->name('schedules.delete');
+        });
     });
 });
