@@ -6,6 +6,7 @@ use App\Models\BusRoute;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class BusRouteController extends Controller
 {
@@ -202,23 +203,20 @@ class BusRouteController extends Controller
     public function getNearbyStops(Request $request)
     {
         try {
-            $latitude = $request->query('latitude');
-            $longitude = $request->query('longitude');
-            $radius = $request->query('radius', 2); // Default 2km radius
-
             $routes = BusRoute::all();
             $nearbyStops = [];
 
             foreach ($routes as $route) {
-                foreach ($route->stops as $stop) {
+                foreach ($route->stops as $index => $stop) {
                     $distance = $this->calculateDistance(
-                        $latitude,
-                        $longitude,
+                        $request->query('latitude'),
+                        $request->query('longitude'),
                         $stop['coordinates']['latitude'],
                         $stop['coordinates']['longitude']
                     );
 
-                    if ($distance <= $radius) {
+                    if ($distance <= $request->query('radius', 2)) {
+                        $stop['id'] = $stop['id'] ?? "{$route->id}-stop-{$index}"; // Ensure ID exists
                         $stop['distance'] = $distance;
                         $stop['route_numbers'] = [$route->route_number];
                         $nearbyStops[] = $stop;
@@ -226,11 +224,16 @@ class BusRouteController extends Controller
                 }
             }
 
-            // Group stops by location and combine route numbers
+            // Modify grouping to preserve IDs
             $groupedStops = collect($nearbyStops)->groupBy('name')
                 ->map(function ($group) {
                     $first = $group->first();
-                    $first['route_numbers'] = $group->pluck('route_numbers')->flatten()->unique()->values();
+                    $first['route_numbers'] = $group->pluck('route_numbers')
+                        ->flatten()
+                        ->unique()
+                        ->values();
+                    // Ensure ID is always present
+                    $first['id'] = $first['id'] ?? 'stop-' . Str::uuid();
                     return $first;
                 })->values();
 
