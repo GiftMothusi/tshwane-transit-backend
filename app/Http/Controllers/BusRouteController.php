@@ -198,4 +198,64 @@ class BusRouteController extends Controller
             ], 500);
         }
     }
+
+    public function getNearbyStops(Request $request)
+    {
+        try {
+            $latitude = $request->query('latitude');
+            $longitude = $request->query('longitude');
+            $radius = $request->query('radius', 2); // Default 2km radius
+
+            $routes = BusRoute::all();
+            $nearbyStops = [];
+
+            foreach ($routes as $route) {
+                foreach ($route->stops as $stop) {
+                    $distance = $this->calculateDistance(
+                        $latitude,
+                        $longitude,
+                        $stop['coordinates']['latitude'],
+                        $stop['coordinates']['longitude']
+                    );
+
+                    if ($distance <= $radius) {
+                        $stop['distance'] = $distance;
+                        $stop['route_numbers'] = [$route->route_number];
+                        $nearbyStops[] = $stop;
+                    }
+                }
+            }
+
+            // Group stops by location and combine route numbers
+            $groupedStops = collect($nearbyStops)->groupBy('name')
+                ->map(function ($group) {
+                    $first = $group->first();
+                    $first['route_numbers'] = $group->pluck('route_numbers')->flatten()->unique()->values();
+                    return $first;
+                })->values();
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $groupedStops
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error fetching nearby stops: ' . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch nearby stops'
+            ], 500);
+        }
+    }
+
+    private function calculateDistance($lat1, $lon1, $lat2, $lon2)
+    {
+        $R = 6371; // Earth's radius in km
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLon = deg2rad($lon2 - $lon1);
+        $a = sin($dLat/2) * sin($dLat/2) +
+            cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+            sin($dLon/2) * sin($dLon/2);
+        $c = 2 * atan2(sqrt($a), sqrt(1-$a));
+        return $R * $c;
+    }
 }
