@@ -37,11 +37,15 @@ Route::prefix('v1')->group(function () {
          ->name('schedules.index');
     Route::get('/bus-locations', [BusScheduleController::class, 'getLiveLocations'])
          ->name('schedules.locations');
+    Route::get('/bus-stops/nearby', [BusRouteController::class, 'getNearbyStops'])
+        ->name('stops.nearby');
 
     Route::get('/routes/search', [BusRouteController::class, 'search'])
          ->name('routes.search');
     Route::get('/schedules/search', [BusScheduleController::class, 'search'])
          ->name('schedules.search');
+
+
 
     // Protected transit management routes
     Route::middleware('auth:sanctum')->group(function () {
