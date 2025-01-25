@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BusRouteController;
 use App\Http\Controllers\BusScheduleController;
+use App\Http\Controllers\BusRoutePlanningController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Log;
 
@@ -39,6 +40,9 @@ Route::prefix('v1')->group(function () {
          ->name('schedules.locations');
     Route::get('/bus-stops/nearby', [BusRouteController::class, 'getNearbyStops'])
         ->name('stops.nearby');
+
+    Route::post('/routes/plan', [BusRoutePlanningController::class, 'planRoute'])
+    ->name('routes.plan');
 
     Route::get('/routes/search', [BusRouteController::class, 'search'])
          ->name('routes.search');
