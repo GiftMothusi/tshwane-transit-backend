@@ -73,3 +73,6 @@
 [2025-01-25 10:59:55] local.INFO: Processing route {"route_id":8} 
 [2025-01-25 10:59:55] local.INFO: Routes processed {"total":2} 
 [2025-01-25 10:59:55] local.INFO: Routes found {"count":2} 
+[2025-01-26 17:34:40] local.ERROR: Failed to fetch wallet: {"error":"Attempt to read property \"wallet\" on null","user_id":null} 
+[2025-01-26 17:34:51] local.ERROR: Topup failed: {"error":"Attempt to read property \"wallet\" on null","user_id":null,"amount":50} 
+[2025-01-26 17:35:11] local.ERROR: Failed to fetch wallet: {"error":"Attempt to read property \"wallet\" on null","user_id":null} 
