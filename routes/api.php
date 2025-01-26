@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BusRouteController;
 use App\Http\Controllers\BusScheduleController;
 use App\Http\Controllers\BusRoutePlanningController;
+use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Log;
 
@@ -48,6 +49,11 @@ Route::prefix('v1')->group(function () {
          ->name('routes.search');
     Route::get('/schedules/search', [BusScheduleController::class, 'search'])
          ->name('schedules.search');
+
+    Route::get('/wallet', [PaymentController::class, 'getWallet']);
+    Route::post('/wallet/topup', [PaymentController::class, 'topupWallet']);
+    Route::post('/tickets/purchase', [PaymentController::class, 'purchaseTicket']);
+    Route::get('/tickets/active', [PaymentController::class, 'getActiveTickets']);
 
 
 
